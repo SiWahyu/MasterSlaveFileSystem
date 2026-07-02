@@ -15,6 +15,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Timer;
 
 
 public class SlaveFrame extends JFrame {
@@ -50,6 +51,8 @@ public class SlaveFrame extends JFrame {
     private JTextField searchField;
 
     private List<FileInfo> allFiles = new ArrayList<>();
+
+    private Timer autoRefreshTimer;
 
 
     public SlaveFrame() {
@@ -389,6 +392,8 @@ public class SlaveFrame extends JFrame {
 
                 slaveClient.connect();
 
+                startAutoRefresh();
+
                 statusLabel.setText("🟢 Connected");
 
                 connectButton.setEnabled(false);
@@ -623,6 +628,35 @@ public class SlaveFrame extends JFrame {
             );
 
             exception.printStackTrace();
+
+        }
+
+    }
+
+    private void startAutoRefresh() {
+
+        autoRefreshTimer = new Timer(2000, event -> {
+
+            try {
+
+                refreshFiles();
+
+            } catch (Exception exception) {
+
+                // Abaikan jika server sedang berhenti
+            }
+
+        });
+
+        autoRefreshTimer.start();
+
+    }
+
+    private void stopAutoRefresh() {
+
+        if (autoRefreshTimer != null) {
+
+            autoRefreshTimer.stop();
 
         }
 
