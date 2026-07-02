@@ -392,7 +392,7 @@ public class SlaveFrame extends JFrame {
 
                 slaveClient.connect();
 
-                startAutoRefresh();
+//                startAutoRefresh();
 
                 statusLabel.setText("🟢 Connected");
 
@@ -515,6 +515,8 @@ public class SlaveFrame extends JFrame {
                 return;
 
             }
+
+            downloadButton.setEnabled(true);
 
             String fileName = tableModel
                     .getValueAt(selectedRow, 0)
