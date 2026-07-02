@@ -14,6 +14,7 @@ public final class Protocol {
     public static final String SEARCH = "SEARCH";
     public static final String DOWNLOAD = "DOWNLOAD";
     public static final String LIST_FILES = "LIST_FILES";
+    public static final String LOGIN = "LOGIN";
 
     // Response
     public static final String SUCCESS = "SUCCESS";

@@ -68,21 +68,16 @@ public class MasterServer {
                 Socket clientSocket = serverSocket.accept();
 
                 // Membuat thread baru untuk setiap client yang terhubung
-                ClientHandler clientHandler = new ClientHandler(
-                        clientSocket,
-                        fileTransferService,
-                        searchService,
-                        downloadService
-                );
+                ClientHandler clientHandler =
+                        new ClientHandler(
+                                this,
+                                clientSocket,
+                                fileTransferService,
+                                searchService,
+                                downloadService
+                        );
 
                 clients.add(clientHandler);
-
-                if (listener != null) {
-                    listener.onClientConnected(
-                            clientHandler.getClientName(),
-                            clients.size()
-                    );
-                }
 
                 Thread clientThread = new Thread(clientHandler);
 
@@ -168,6 +163,38 @@ public class MasterServer {
      */
     public int getClientCount() {
         return clients.size();
+    }
+
+    public synchronized void removeClient(
+            ClientHandler clientHandler
+    ) {
+
+        clients.remove(clientHandler);
+
+        if (listener != null) {
+
+            listener.onClientDisconnected(
+                    clientHandler.getUsername(),
+                    clients.size()
+            );
+
+        }
+
+    }
+
+    public synchronized void clientLoggedIn(
+            ClientHandler clientHandler
+    ) {
+
+        if (listener != null) {
+
+            listener.onClientConnected(
+                    clientHandler.getUsername(),
+                    clients.size()
+            );
+
+        }
+
     }
 
 }

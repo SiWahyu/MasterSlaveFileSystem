@@ -23,6 +23,15 @@ public interface ServerListener {
      */
     void onClientConnected(String clientName, int totalClient);
 
-    void onFileUploaded(String fileName);
+    void onFileUploaded(
+            String username,
+            String fileName,
+            int totalFiles
+    );
+
+    void onClientDisconnected(
+            String username,
+            int totalClients
+    );
 
 }

@@ -30,16 +30,25 @@ public class ClientHandler implements Runnable {
 
     private DataOutputStream output;
 
-    public ClientHandler(Socket clientSocket,
-                         FileTransferService fileTransferService,
-                         SearchService searchService,
-                         DownloadService downloadService) {
+    private String username = "Unknown";
+
+    private final MasterServer masterServer;
+
+    public ClientHandler(
+            MasterServer masterServer,
+            Socket clientSocket,
+            FileTransferService fileTransferService,
+            SearchService searchService,
+            DownloadService downloadService
+    ) {
 
         this.clientSocket = clientSocket;
 
         this.fileTransferService = fileTransferService;
 
         this.searchService = searchService;
+
+        this.masterServer = masterServer;
 
         this.downloadService = downloadService;
 
@@ -67,9 +76,22 @@ public class ClientHandler implements Runnable {
 
                 switch (command) {
 
+                    case Protocol.LOGIN -> {
+
+                        username = input.readUTF();
+
+                        System.out.println(
+                                "🟢 " + username + " connected."
+                        );
+
+                        masterServer.clientLoggedIn(this);
+
+                    }
+
                     case Protocol.UPLOAD ->
 
                             fileTransferService.upload(
+                                    username,
                                     input,
                                     output
                             );
@@ -105,6 +127,13 @@ public class ClientHandler implements Runnable {
             );
 
         }
+        finally {
+
+            close();
+
+            masterServer.removeClient(this);
+
+        }
 
     }
 
@@ -133,6 +162,12 @@ public class ClientHandler implements Runnable {
             exception.printStackTrace();
 
         }
+
+    }
+
+    public String getUsername() {
+
+        return username;
 
     }
 

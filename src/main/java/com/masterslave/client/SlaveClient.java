@@ -10,6 +10,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+import com.masterslave.common.model.FileInfo;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Client yang bertugas
  * berkomunikasi dengan Master.
@@ -26,7 +30,12 @@ public class SlaveClient {
 
     private DataOutputStream output;
 
-    private static final String DOWNLOAD_DIRECTORY = "storage/downloads";
+    private static final String DOWNLOAD_DIRECTORY =
+            System.getProperty("user.home")
+                    + File.separator
+                    + "Downloads";
+
+    private String username;
 
     /**
      * Menghubungkan Slave ke Master.
@@ -42,6 +51,12 @@ public class SlaveClient {
         output = new DataOutputStream(
                 socket.getOutputStream()
         );
+
+        output.writeUTF(Protocol.LOGIN);
+
+        output.writeUTF(username);
+
+        output.flush();
 
     }
 
@@ -117,19 +132,32 @@ public class SlaveClient {
     /**
      * Meminta daftar file dari Master.
      */
-    public String[] search() throws IOException {
+    public List<FileInfo> search() throws IOException {
 
         output.writeUTF(Protocol.SEARCH);
 
-        output.flush();
+        int total = input.readInt();
 
-        int totalFile = input.readInt();
+        List<FileInfo> files = new ArrayList<>();
 
-        String[] files = new String[totalFile];
+        for (int i = 0; i < total; i++) {
 
-        for (int i = 0; i < totalFile; i++) {
+            String fileName = input.readUTF();
 
-            files[i] = input.readUTF();
+            String uploadedBy = input.readUTF();
+
+            long fileSize = input.readLong();
+
+            String uploadTime = input.readUTF();
+
+            files.add(
+                    new FileInfo(
+                            fileName,
+                            uploadedBy,
+                            fileSize,
+                            uploadTime
+                    )
+            );
 
         }
 
@@ -168,7 +196,11 @@ public class SlaveClient {
 
         }
 
+        System.out.println("DOWNLOAD DIRECTORY : " + DOWNLOAD_DIRECTORY);
+
         File destination = new File(directory, fileName);
+
+        System.out.println("DESTINATION : " + destination.getAbsolutePath());
 
         try (FileOutputStream fos = new FileOutputStream(destination)) {
 
@@ -199,6 +231,12 @@ public class SlaveClient {
         }
 
         System.out.println("Download selesai : " + destination.getAbsolutePath());
+
+    }
+
+    public void setUsername(String username) {
+
+        this.username = username;
 
     }
 

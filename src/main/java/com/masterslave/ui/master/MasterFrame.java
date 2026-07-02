@@ -406,13 +406,42 @@ public class MasterFrame extends JFrame implements ServerListener {
         });
 
     }
-
     @Override
-    public void onFileUploaded(String fileName) {
+    public void onFileUploaded(
+            String username,
+            String fileName,
+            int totalFiles
+    ) {
 
         SwingUtilities.invokeLater(() -> {
 
-            addLog("📤 Upload berhasil : " + fileName);
+            addLog(
+                    "📤 " + username +
+                            " mengupload " +
+                            fileName
+            );
+
+            fileCard.setValue(
+                    String.valueOf(totalFiles)
+            );
+
+        });
+
+    }
+
+    @Override
+    public void onClientDisconnected(
+            String username,
+            int totalClients
+    ) {
+
+        System.out.println("EVENT DISCONNECT");
+
+        SwingUtilities.invokeLater(() -> {
+
+            updateClientCount(totalClients);
+
+            addLog("🔴 " + username + " disconnected.");
 
         });
 

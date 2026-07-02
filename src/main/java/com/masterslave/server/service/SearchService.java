@@ -3,8 +3,9 @@ package com.masterslave.server.service;
 import com.masterslave.storage.FileStorage;
 
 import java.io.DataOutputStream;
-import java.io.File;
 import java.io.IOException;
+import com.masterslave.common.model.FileInfo;
+
 
 /**
  * Mengirim daftar file yang tersedia
@@ -27,17 +28,29 @@ public class SearchService {
             DataOutputStream output
     ) throws IOException {
 
-        File[] files = fileStorage.getAllFiles();
+        output.writeInt(
+                fileStorage.getFileInfos().size()
+        );
 
-        output.writeInt(files.length);
+        for (FileInfo fileInfo : fileStorage.getFileInfos()) {
 
-        for (File file : files) {
+            output.writeUTF(
+                    fileInfo.getFileName()
+            );
 
-            output.writeUTF(file.getName());
+            output.writeUTF(
+                    fileInfo.getUploadedBy()
+            );
+
+            output.writeLong(
+                    fileInfo.getFileSize()
+            );
+
+            output.writeUTF(
+                    fileInfo.getUploadTime()
+            );
 
         }
-
-        output.flush();
 
     }
 

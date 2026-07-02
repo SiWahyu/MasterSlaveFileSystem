@@ -10,6 +10,8 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import com.masterslave.listener.ServerListener;
+import com.masterslave.common.model.FileInfo;
+import java.time.LocalDateTime;
 
 /**
  * Menangani proses upload file
@@ -34,6 +36,7 @@ public class FileTransferService {
     }
 
     public void upload(
+            String username,
             DataInputStream input,
             DataOutputStream output
     ) throws IOException {
@@ -47,6 +50,27 @@ public class FileTransferService {
 
         try (FileOutputStream fos =
                      new FileOutputStream(destination)) {
+
+            FileInfo fileInfo = new FileInfo(
+                    fileName,
+                    username,
+                    fileSize,
+                    LocalDateTime.now().toString()
+            );
+
+            fileStorage.addFileInfo(fileInfo);
+
+            if (listener != null) {
+
+                listener.onFileUploaded(
+                        username,
+                        fileName,
+                        fileStorage.getTotalFiles()
+                );
+
+            }
+            fileStorage.printMetadata();
+
 
             byte[] buffer = new byte[4096];
 
@@ -78,8 +102,12 @@ public class FileTransferService {
         }
 
         if (listener != null) {
-
-            listener.onFileUploaded(fileName);
+            
+            listener.onFileUploaded(
+                    username,
+                    fileName,
+                    fileStorage.getTotalFiles()
+            );
 
         }
 
