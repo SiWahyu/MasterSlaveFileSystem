@@ -8,6 +8,8 @@ import com.masterslave.server.service.FileTransferService;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
+import com.masterslave.server.service.SearchService;
+import com.masterslave.server.service.DownloadService;
 
 /**
  * Menangani komunikasi antara server dan satu client.
@@ -20,16 +22,26 @@ public class ClientHandler implements Runnable {
 
     private final FileTransferService fileTransferService;
 
+    private final SearchService searchService;
+
+    private final DownloadService downloadService;
+
     private DataInputStream input;
 
     private DataOutputStream output;
 
     public ClientHandler(Socket clientSocket,
-                         FileTransferService fileTransferService) {
+                         FileTransferService fileTransferService,
+                         SearchService searchService,
+                         DownloadService downloadService) {
 
         this.clientSocket = clientSocket;
 
         this.fileTransferService = fileTransferService;
+
+        this.searchService = searchService;
+
+        this.downloadService = downloadService;
 
         this.clientName =
                 clientSocket.getInetAddress().getHostAddress();
@@ -58,6 +70,19 @@ public class ClientHandler implements Runnable {
                     case Protocol.UPLOAD ->
 
                             fileTransferService.upload(
+                                    input,
+                                    output
+                            );
+
+                    case Protocol.SEARCH ->
+
+                            searchService.sendFileList(
+                                    output
+                            );
+
+                    case Protocol.DOWNLOAD ->
+
+                            downloadService.download(
                                     input,
                                     output
                             );

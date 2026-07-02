@@ -72,4 +72,16 @@ public class FileStorage {
 
     }
 
+    /**
+     * Mengembalikan seluruh file yang ada
+     * pada folder storage/uploads.
+     */
+    public File[] getAllFiles() {
+
+        File[] files = getStorageDirectory().listFiles();
+
+        return files == null ? new File[0] : files;
+
+    }
+
 }

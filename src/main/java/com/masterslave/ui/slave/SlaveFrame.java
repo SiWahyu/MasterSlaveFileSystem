@@ -7,10 +7,12 @@ import com.masterslave.util.UIConstants;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.io.IOException;
 import java.io.File;
-
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 
 public class SlaveFrame extends JFrame {
@@ -31,6 +33,20 @@ public class SlaveFrame extends JFrame {
 
     private JLabel selectedFileLabel;
 
+    private JButton refreshButton;
+
+    private JTable fileTable;
+
+    private DefaultTableModel tableModel;
+
+    private JScrollPane tableScrollPane;
+
+    private JButton downloadButton;
+
+    private JTextField searchField;
+
+    private String[] allFiles = new String[0];
+
     public SlaveFrame() {
 
         initializeFrame();
@@ -41,7 +57,7 @@ public class SlaveFrame extends JFrame {
 
         setTitle("Slave Client");
 
-        setSize(450,250);
+        setSize(1200, 700);
 
         setLocationRelativeTo(null);
 
@@ -65,7 +81,7 @@ public class SlaveFrame extends JFrame {
 
         panel.setBackground(UIConstants.BACKGROUND);
 
-        JPanel form = new JPanel(new GridLayout(6,1,10,10));
+        JPanel form = new JPanel(new GridLayout(8,1,10,10));
 
         form.setOpaque(false);
 
@@ -80,6 +96,17 @@ public class SlaveFrame extends JFrame {
         browseButton = new JButton("Browse File");
 
         uploadButton = new JButton("Upload");
+
+        refreshButton = new JButton("Refresh File");
+
+        searchField = new JTextField();
+
+        searchField.putClientProperty(
+                FlatClientProperties.PLACEHOLDER_TEXT,
+                "Cari file..."
+        );
+
+        refreshButton.setEnabled(false);
 
         selectedFileLabel = new JLabel("Belum ada file dipilih");
         selectedFileLabel.setFont(UIConstants.NORMAL_FONT);
@@ -98,11 +125,47 @@ public class SlaveFrame extends JFrame {
 
         form.add(uploadButton);
 
+        form.add(refreshButton);
+
+        form.add(searchField);
+
         form.add(selectedFileLabel);
 
         form.add(statusLabel);
 
-        panel.add(form,BorderLayout.NORTH);
+        tableModel = new DefaultTableModel(
+                new Object[]{"Nama File"},
+                0
+        ) {
+
+            @Override
+            public boolean isCellEditable(int row, int column) {
+
+                return false;
+
+            }
+
+        };
+
+        fileTable = new JTable(tableModel);
+
+        fileTable.setRowHeight(28);
+
+        tableScrollPane = new JScrollPane(fileTable);
+
+        tableScrollPane.setPreferredSize(
+                new Dimension(350,180)
+        );
+
+        downloadButton = new JButton("Download");
+
+        downloadButton.setEnabled(false);
+
+        panel.add(form, BorderLayout.NORTH);
+
+        panel.add(tableScrollPane, BorderLayout.CENTER);
+
+        panel.add(downloadButton, BorderLayout.SOUTH);
 
         registerEvent();
 
@@ -125,6 +188,14 @@ public class SlaveFrame extends JFrame {
                 browseButton.setEnabled(true);
 
                 uploadButton.setEnabled(true);
+
+                refreshButton.setEnabled(true);
+
+                refreshFiles();
+
+                fileTable.clearSelection();
+
+                downloadButton.setEnabled(false);
 
             }catch(IOException exception){
 
@@ -177,6 +248,17 @@ public class SlaveFrame extends JFrame {
                         "Upload berhasil."
                 );
 
+                // Reset pilihan file
+                selectedFile = null;
+
+                selectedFileLabel.setText("Belum ada file dipilih");
+
+                uploadButton.setEnabled(false);
+
+                // Refresh daftar file di Master
+                refreshFiles();
+
+
             } catch (IOException exception) {
 
                 JOptionPane.showMessageDialog(
@@ -189,6 +271,138 @@ public class SlaveFrame extends JFrame {
             }
 
         });
+
+        refreshButton.addActionListener(event -> {
+
+            refreshFiles();
+
+        });
+
+        fileTable.getSelectionModel().addListSelectionListener(event -> {
+
+            downloadButton.setEnabled(
+                    fileTable.getSelectedRow() != -1
+            );
+
+        });
+
+        downloadButton.addActionListener(event -> {
+
+            int selectedRow = fileTable.getSelectedRow();
+
+            if (selectedRow == -1) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Pilih file terlebih dahulu."
+                );
+
+                return;
+
+            }
+
+            String fileName = tableModel
+                    .getValueAt(selectedRow, 0)
+                    .toString();
+
+            try {
+
+                slaveClient.download(fileName);
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "File berhasil didownload."
+                );
+
+            } catch (IOException exception) {
+
+                JOptionPane.showMessageDialog(
+                        this,
+                        "Download gagal."
+                );
+
+                exception.printStackTrace();
+
+            }
+
+        });
+
+        searchField.getDocument().addDocumentListener(
+                new DocumentListener() {
+
+                    @Override
+                    public void insertUpdate(DocumentEvent event) {
+
+                        filterTable();
+
+                    }
+
+                    @Override
+                    public void removeUpdate(DocumentEvent event) {
+
+                        filterTable();
+
+                    }
+
+                    @Override
+                    public void changedUpdate(DocumentEvent event) {
+
+                        filterTable();
+
+                    }
+
+                }
+        );
+
+    }
+
+    private void filterTable() {
+
+        String keyword =
+                searchField.getText().toLowerCase();
+
+        tableModel.setRowCount(0);
+
+        for (String file : allFiles) {
+
+            if (file.toLowerCase().contains(keyword)) {
+
+                tableModel.addRow(
+                        new Object[]{file}
+                );
+
+            }
+
+        }
+
+    }
+
+    private void refreshFiles() {
+
+        try {
+
+            allFiles = slaveClient.search();
+
+            tableModel.setRowCount(0);
+
+            for (String file : allFiles) {
+
+                tableModel.addRow(
+                        new Object[]{file}
+                );
+
+            }
+
+        } catch (IOException exception) {
+
+            JOptionPane.showMessageDialog(
+                    this,
+                    "Gagal mengambil daftar file."
+            );
+
+            exception.printStackTrace();
+
+        }
 
     }
 

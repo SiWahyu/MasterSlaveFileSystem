@@ -9,6 +9,9 @@ import com.masterslave.listener.ServerListener;
 import com.masterslave.server.service.FileTransferService;
 import com.masterslave.storage.FileStorage;
 import java.net.SocketException;
+import com.masterslave.server.service.SearchService;
+import com.masterslave.server.service.DownloadService;
+
 /**
  * Bertanggung jawab menjalankan server dan menerima koneksi client.
  */
@@ -30,6 +33,14 @@ public class MasterServer {
     private final FileTransferService
             fileTransferService =
             new FileTransferService(fileStorage);
+
+    private final SearchService
+            searchService =
+            new SearchService(fileStorage);
+
+    private final DownloadService
+            downloadService =
+            new DownloadService(fileStorage);
 
     /**
      * Menjalankan server.
@@ -59,7 +70,9 @@ public class MasterServer {
                 // Membuat thread baru untuk setiap client yang terhubung
                 ClientHandler clientHandler = new ClientHandler(
                         clientSocket,
-                        fileTransferService
+                        fileTransferService,
+                        searchService,
+                        downloadService
                 );
 
                 clients.add(clientHandler);
