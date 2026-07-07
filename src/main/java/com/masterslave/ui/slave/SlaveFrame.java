@@ -390,7 +390,7 @@ public class SlaveFrame extends JFrame {
                         usernameField.getText().trim()
                 );
 
-                slaveClient.connect();
+                slaveClient.connect(hostField.getText().trim());
 
 //                startAutoRefresh();
 

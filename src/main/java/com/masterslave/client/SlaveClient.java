@@ -20,7 +20,6 @@ import java.util.List;
  */
 public class SlaveClient {
 
-    private static final String HOST = "localhost";
 
     private static final int PORT = 5000;
 
@@ -40,9 +39,9 @@ public class SlaveClient {
     /**
      * Menghubungkan Slave ke Master.
      */
-    public void connect() throws IOException {
+    public void connect(String host) throws IOException {
 
-        socket = new Socket(HOST, PORT);
+        socket = new Socket(host, PORT);
 
         input = new DataInputStream(
                 socket.getInputStream()

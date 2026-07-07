@@ -310,6 +310,35 @@ public class MasterFrame extends JFrame implements ServerListener {
     }
 
     /**
+     * Menghapus client dari tabel saat disconnect.
+     */
+    public void removeClientFromTable(String clientName) {
+
+        DefaultTableModel model =
+                (DefaultTableModel) clientTable.getModel();
+
+        for (int i = 0; i < model.getRowCount(); i++) {
+
+            if (model.getValueAt(i, 1).equals(clientName)) {
+
+                model.removeRow(i);
+                
+                break;
+
+            }
+
+        }
+
+        // Perbarui ID
+        for (int i = 0; i < model.getRowCount(); i++) {
+            
+            model.setValueAt(i + 1, i, 0);
+            
+        }
+
+    }
+
+    /**
      * Mengubah jumlah client pada dashboard.
      */
     public void updateClientCount(int totalClient) {
@@ -438,6 +467,8 @@ public class MasterFrame extends JFrame implements ServerListener {
         System.out.println("EVENT DISCONNECT");
 
         SwingUtilities.invokeLater(() -> {
+
+            removeClientFromTable(username);
 
             updateClientCount(totalClients);
 
