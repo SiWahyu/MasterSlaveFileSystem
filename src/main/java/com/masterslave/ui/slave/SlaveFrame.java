@@ -17,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.Timer;
 
-
 public class SlaveFrame extends JFrame {
     
     private CardLayout cardLayout;
@@ -26,50 +25,29 @@ public class SlaveFrame extends JFrame {
     private JButton disconnectButton;
     private JLabel stagingLabel;
     private JProgressBar progressBar;
-
     private JTextField usernameField;
-
     private JTextField hostField;
-
     private JButton connectButton;
-
     private JButton browseButton;
-
     private JButton uploadButton;
-
     private JLabel statusLabel;
-
     private final SlaveClient slaveClient = new SlaveClient();
-
     private File selectedFile;
-
     private JLabel selectedFileLabel;
-
     private JButton refreshButton;
-
     private JTable fileTable;
-
     private DefaultTableModel tableModel;
-
     private JScrollPane tableScrollPane;
-
     private JButton downloadButton;
-
     private JTextField searchField;
-
     private List<FileInfo> allFiles = new ArrayList<>();
-
     private Timer autoRefreshTimer;
 
-
     public SlaveFrame() {
-
         initializeFrame();
-
-    }
+}
 
     private void initializeFrame() {
-
         setTitle("Slave Client");
 
         setSize(1000,700);
@@ -254,7 +232,6 @@ public class SlaveFrame extends JFrame {
     }
 
     private JPanel createCenterPanel() {
-
         JPanel panel = new JPanel(
                 new BorderLayout(10,10)
         );
@@ -301,18 +278,14 @@ public class SlaveFrame extends JFrame {
                 },
                 0
         ) {
-
             @Override
             public boolean isCellEditable(
                     int row,
                     int column
             ) {
-
                 return false;
-
-            }
-
-        };
+}
+};
 
         fileTable = new JTable(tableModel);
         fileTable.setRowHeight(28);
@@ -331,8 +304,7 @@ public class SlaveFrame extends JFrame {
         );
 
         return panel;
-
-    }
+}
 
     private JPanel createFooter() {
         JPanel panel = new JPanel(new BorderLayout());
@@ -380,9 +352,7 @@ public class SlaveFrame extends JFrame {
     }
 
     private void registerEvent(){
-
         connectButton.addActionListener(event->{
-
             try{
                 slaveClient.setUsername(
                         usernameField.getText().trim()
@@ -404,17 +374,13 @@ public class SlaveFrame extends JFrame {
                 refreshFiles();
                 fileTable.clearSelection();
                 downloadButton.setEnabled(false);
-
-            }catch(IOException exception){
-
+}catch(IOException exception){
                 JOptionPane.showMessageDialog(
                         this,
                         "Gagal terhubung ke server!"
                 );
-
-            }
-
-        });
+}
+});
 
         browseButton.addActionListener(event -> {
             JFileChooser chooser = new JFileChooser();
@@ -474,18 +440,14 @@ public class SlaveFrame extends JFrame {
         });
 
         refreshButton.addActionListener(event -> {
-
             refreshFiles();
-
-        });
+});
 
         fileTable.getSelectionModel().addListSelectionListener(event -> {
-
             downloadButton.setEnabled(
                     fileTable.getSelectedRow() != -1
             );
-
-        });
+});
 
         downloadButton.addActionListener(event -> {
             int selectedRow = fileTable.getSelectedRow();
@@ -551,15 +513,10 @@ public class SlaveFrame extends JFrame {
             refreshButton.setEnabled(false);
             connectButton.setEnabled(true);
         });
-
-    }
-
-
+}
 
     private void refreshFiles() {
-
         try {
-
             String keyword = searchField.getText().trim();
 
             allFiles = slaveClient.search(keyword);
@@ -567,7 +524,6 @@ public class SlaveFrame extends JFrame {
             tableModel.setRowCount(0);
 
             for (FileInfo file : allFiles) {
-
                 tableModel.addRow(
                         new Object[]{
                                 file.getFileName(),
@@ -576,40 +532,28 @@ public class SlaveFrame extends JFrame {
                                 file.getUploadTime()
                         }
                 );
-
-            }
-
-        } catch (IOException exception) {
-
+}
+} catch (IOException exception) {
             JOptionPane.showMessageDialog(
                     this,
                     "Gagal mengambil daftar file."
             );
 
             exception.printStackTrace();
-
-        }
-
-    }
+}
+}
 
     private void startAutoRefresh() {
-
         autoRefreshTimer = new Timer(2000, event -> {
-
             try {
-
                 refreshFiles();
-
-            } catch (Exception exception) {
-
+} catch (Exception exception) {
                 // Abaikan jika server sedang berhenti
             }
-
-        });
+});
 
         autoRefreshTimer.start();
-
-    }
+}
 
     private void stopAutoRefresh() {
         if (autoRefreshTimer != null) {
@@ -617,3 +561,4 @@ public class SlaveFrame extends JFrame {
         }
     }
 }
+

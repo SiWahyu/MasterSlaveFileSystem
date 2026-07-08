@@ -19,28 +19,20 @@ import java.util.List;
  * berkomunikasi dengan Master.
  */
 public class SlaveClient {
-
-
     private static final int PORT = 5000;
-
     private Socket socket;
-
     private DataInputStream input;
-
     private DataOutputStream output;
-
     private static final String DOWNLOAD_DIRECTORY =
             System.getProperty("user.home")
                     + File.separator
                     + "Downloads";
-
     private String username;
 
     /**
      * Menghubungkan Slave ke Master.
      */
     public void connect(String host) throws IOException {
-
         socket = new Socket(host, PORT);
 
         input = new DataInputStream(
@@ -56,42 +48,30 @@ public class SlaveClient {
         output.writeUTF(username);
 
         output.flush();
-
-    }
+}
 
     /**
      * Menutup koneksi.
      */
     public void disconnect() throws IOException {
-
         if (socket != null) {
-
             socket.close();
-
-        }
-
-    }
+}
+}
 
     public Socket getSocket() {
-
         return socket;
-
-    }
+}
 
     public DataOutputStream getOutput() {
-
         return output;
-
-    }
+}
 
     public DataInputStream getInput() {
-
         return input;
-
-    }
+}
 
     public void upload(File file, java.util.function.Consumer<Integer> progressCallback) throws IOException {
-
         output.writeUTF(Protocol.UPLOAD);
         output.writeUTF(file.getName());
         output.writeLong(file.length());
@@ -117,22 +97,16 @@ public class SlaveClient {
         String response = input.readUTF();
 
         if (Protocol.SUCCESS.equals(response)) {
-
             System.out.println("Upload berhasil.");
-
-        } else {
-
+} else {
             System.out.println("Upload gagal.");
-
-        }
-
-    }
+}
+}
 
     /**
      * Meminta daftar file dari Master.
      */
     public List<FileInfo> search(String keyword) throws IOException {
-
         output.writeUTF(Protocol.SEARCH);
         output.writeUTF(keyword);
 
@@ -141,7 +115,6 @@ public class SlaveClient {
         List<FileInfo> files = new ArrayList<>();
 
         for (int i = 0; i < total; i++) {
-
             String fileName = input.readUTF();
 
             String uploadedBy = input.readUTF();
@@ -158,18 +131,15 @@ public class SlaveClient {
                             uploadTime
                     )
             );
-
-        }
+}
 
         return files;
-
-    }
+}
 
     /**
      * Mengunduh file dari Master.
      */
     public void download(String fileName, java.util.function.Consumer<Integer> progressCallback) throws IOException {
-
         output.writeUTF(Protocol.DOWNLOAD);
         output.writeUTF(fileName);
         output.flush();
@@ -213,13 +183,10 @@ public class SlaveClient {
         }
 
         System.out.println("Download selesai : " + destination.getAbsolutePath());
-
-    }
+}
 
     public void setUsername(String username) {
-
         this.username = username;
-
-    }
-
 }
+}
+

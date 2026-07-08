@@ -14,21 +14,16 @@ import javax.swing.table.DefaultTableModel;
 import com.masterslave.listener.ServerListener;
 
 public class MasterFrame extends JFrame implements ServerListener {
-
     private DashboardCard clientCard;
     private DashboardCard fileCard;
     private DashboardCard statusCard;
-
     private JLabel statusLabel;
-
     private JTable clientTable;
-
     private JTextArea logArea;
     private ControlPanel controlPanel;
     private final MasterServer masterServer = new MasterServer();
 
     public MasterFrame() {
-
         initializeFrame();
 
         initializeComponents();
@@ -36,15 +31,12 @@ public class MasterFrame extends JFrame implements ServerListener {
         masterServer.setServerListener(this);
 
         registerEvents();
-
-    }
-
+}
 
     /**
      * Mengatur properti dasar jendela.
      */
     private void initializeFrame() {
-
         setTitle("Master Server");
 
         setSize(1200, 700);
@@ -56,23 +48,19 @@ public class MasterFrame extends JFrame implements ServerListener {
         setContentPane(createContent());
 
         setVisible(true);
-
-    }
+}
 
     /**
      * Inisialisasi data awal komponen.
      */
     private void initializeComponents() {
-
         addLog("Server belum dijalankan.");
-
-    }
+}
 
     /**
      * Membuat seluruh isi halaman.
      */
     private JPanel createContent() {
-
         JPanel root = new JPanel(new BorderLayout(15, 15));
 
         root.setBackground(UIConstants.BACKGROUND);
@@ -92,14 +80,12 @@ public class MasterFrame extends JFrame implements ServerListener {
         root.add(createCenterPanel(), BorderLayout.CENTER);
 
         return root;
-
-    }
+}
 
     /**
      * Header aplikasi.
      */
     private JPanel createHeader() {
-
         JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
@@ -137,7 +123,6 @@ public class MasterFrame extends JFrame implements ServerListener {
 
     //    Tool Bar
     private JPanel createToolbar() {
-
         controlPanel = new ControlPanel();
 
         JPanel panel = new JPanel(new BorderLayout());
@@ -147,14 +132,12 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.add(controlPanel, BorderLayout.WEST);
 
         return panel;
-
-    }
+}
 
     /**
      * Panel utama.
      */
     private JPanel createCenterPanel() {
-
         JPanel panel = new JPanel(new BorderLayout(15, 15));
 
         panel.setOpaque(false);
@@ -166,14 +149,12 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.add(createLogPanel(), BorderLayout.SOUTH);
 
         return panel;
-
-    }
+}
 
     /**
      * Dashboard statistik.
      */
     private JPanel createDashboard() {
-
         JPanel panel = new JPanel(new GridLayout(1, 3, 15, 15));
 
         panel.setOpaque(false);
@@ -189,14 +170,12 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.add(statusCard);
 
         return panel;
-
-    }
+}
 
     /**
      * Tabel client.
      */
     private JPanel createClientTable() {
-
         JPanel panel = new JPanel(new BorderLayout(10, 10));
 
         panel.setOpaque(false);
@@ -239,14 +218,12 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
-
-    }
+}
 
     /**
      * Area log.
      */
     private JPanel createLogPanel() {
-
         JPanel panel = new JPanel(new BorderLayout(10, 10));
 
         panel.setOpaque(false);
@@ -277,27 +254,23 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.add(scrollPane, BorderLayout.CENTER);
 
         return panel;
-
-    }
+}
 
     /**
      * Menambahkan pesan ke activity log.
      */
     public void addLog(String message) {
-
         String time = java.time.LocalTime.now()
                 .withNano(0)
                 .toString();
 
         logArea.append("[" + time + "] " + message + "\n");
-
-    }
+}
 
     /**
      * Menambahkan satu baris client ke tabel.
      */
     public void addClient(String clientName) {
-
         DefaultTableModel model =
                 (DefaultTableModel) clientTable.getModel();
 
@@ -306,40 +279,32 @@ public class MasterFrame extends JFrame implements ServerListener {
                 clientName,
                 "Connected"
         });
-
-    }
+}
 
     /**
      * Menghapus seluruh data client dari tabel.
      */
     public void clearClientTable() {
-
         DefaultTableModel model =
                 (DefaultTableModel) clientTable.getModel();
 
         model.setRowCount(0);
-
-    }
+}
 
     /**
      * Menghapus client dari tabel saat disconnect.
      */
     public void removeClientFromTable(String clientName) {
-
         DefaultTableModel model =
                 (DefaultTableModel) clientTable.getModel();
 
         for (int i = 0; i < model.getRowCount(); i++) {
-
             if (model.getValueAt(i, 1).equals(clientName)) {
-
                 model.removeRow(i);
                 
                 break;
-
-            }
-
-        }
+}
+}
 
         // Perbarui ID
         for (int i = 0; i < model.getRowCount(); i++) {
@@ -347,52 +312,39 @@ public class MasterFrame extends JFrame implements ServerListener {
             model.setValueAt(i + 1, i, 0);
             
         }
-
-    }
+}
 
     /**
      * Mengubah jumlah client pada dashboard.
      */
     public void updateClientCount(int totalClient) {
-
         clientCard.setValue(String.valueOf(totalClient));
-
-    }
+}
 
     /**
      * Mendaftarkan aksi pada tombol toolbar.
      */
     private void registerEvents() {
-
         controlPanel.getStopButton().addActionListener(event -> {
-
             System.out.println("STOP BUTTON DIKLIK");
 
             masterServer.stop();
-
-        });
+});
 
         // Event tombol Start Server
         controlPanel.getStartButton().addActionListener(event -> {
-
             new Thread(masterServer::start).start();
-
-        });
+});
 
         // Event tombol Stop Server
         controlPanel.getStopButton().addActionListener(event -> {
-
             masterServer.stop();
-
-        });
-
-    }
+});
+}
 
     @Override
     public void onServerStarted() {
-
         SwingUtilities.invokeLater(() -> {
-
             System.out.println("onServerStarted dipanggil");
 
             statusLabel.setText("Running");
@@ -406,16 +358,12 @@ public class MasterFrame extends JFrame implements ServerListener {
             System.out.println("Stop  = " + controlPanel.getStopButton().isEnabled());
 
             addLog("Server berhasil dijalankan.");
-
-        });
-
-    }
+});
+}
 
     @Override
     public void onServerStopped() {
-
         SwingUtilities.invokeLater(() -> {
-
             statusLabel.setText("Offline");
             statusLabel.setForeground(Color.RED);
 
@@ -428,34 +376,26 @@ public class MasterFrame extends JFrame implements ServerListener {
             controlPanel.setServerRunning(false);
 
             addLog("Server dihentikan.");
-
-        });
-
-    }
+});
+}
 
     @Override
     public void onClientConnected(String clientName, int totalClient) {
-
         SwingUtilities.invokeLater(() -> {
-
             addClient(clientName);
 
             updateClientCount(totalClient);
 
             addLog("Client terhubung : " + clientName);
-
-        });
-
-    }
+});
+}
     @Override
     public void onFileUploaded(
             String username,
             String fileName,
             int totalFiles
     ) {
-
         SwingUtilities.invokeLater(() -> {
-
             addLog(
                     "📤 " + username +
                             " mengupload " +
@@ -465,21 +405,17 @@ public class MasterFrame extends JFrame implements ServerListener {
             fileCard.setValue(
                     String.valueOf(totalFiles)
             );
-
-        });
-
-    }
+});
+}
 
     @Override
     public void onClientDisconnected(
             String username,
             int totalClients
     ) {
-
         System.out.println("EVENT DISCONNECT");
 
         SwingUtilities.invokeLater(() -> {
-
             removeClientFromTable(username);
 
             updateClientCount(totalClients);
@@ -487,5 +423,5 @@ public class MasterFrame extends JFrame implements ServerListener {
             addLog("🔴 " + username + " disconnected.");
         });
     }
-
 }
+
