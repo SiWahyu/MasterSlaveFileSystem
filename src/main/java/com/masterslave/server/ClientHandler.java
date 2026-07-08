@@ -96,11 +96,16 @@ public class ClientHandler implements Runnable {
                                     output
                             );
 
-                    case Protocol.SEARCH ->
+                    case Protocol.SEARCH -> {
+
+                            String keyword = input.readUTF();
 
                             searchService.sendFileList(
-                                    output
+                                    output,
+                                    keyword
                             );
+
+                    }
 
                     case Protocol.DOWNLOAD ->
 

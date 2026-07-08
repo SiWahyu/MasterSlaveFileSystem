@@ -29,18 +29,26 @@ public final class UIConstants {
             new Font("Consolas", Font.PLAIN, 13);
 
 
-    //    color
     public static final Color BACKGROUND =
             new Color(245, 247, 250);
 
     public static final Color CARD_BACKGROUND =
-            Color.WHITE;
+            new Color(255, 255, 255, 230); // Slight transparency
 
     public static final Color PRIMARY =
-            new Color(33, 150, 243);
+            new Color(0, 120, 215); // Windows 11 Blue
 
     public static final Color SUCCESS =
-            new Color(76, 175, 80);
+            new Color(16, 137, 62); // Start green
+
+    public static final Color ERROR = 
+            new Color(232, 17, 35); // Stop red
+
+    public static final Color TERMINAL_BG =
+            new Color(12, 12, 12); // Windows Terminal black
+
+    public static final Color TERMINAL_FG =
+            new Color(204, 204, 204); // Windows Terminal white/gray
 
     public static final Color TEXT =
             new Color(40, 40, 40);

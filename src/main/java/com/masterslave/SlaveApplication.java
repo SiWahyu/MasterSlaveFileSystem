@@ -9,7 +9,10 @@ public class SlaveApplication {
 
     public static void main(String[] args) {
 
-        FlatIntelliJLaf.setup();
+        com.formdev.flatlaf.themes.FlatMacLightLaf.setup();
+        javax.swing.UIManager.put("Button.arc", 15);
+        javax.swing.UIManager.put("Component.arc", 15);
+        javax.swing.UIManager.put("TextComponent.arc", 15);
 
         SwingUtilities.invokeLater(SlaveFrame::new);
 

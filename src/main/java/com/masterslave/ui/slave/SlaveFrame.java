@@ -19,6 +19,13 @@ import javax.swing.Timer;
 
 
 public class SlaveFrame extends JFrame {
+    
+    private CardLayout cardLayout;
+    private JPanel cardPanel;
+    private JLabel masterIpLabel;
+    private JButton disconnectButton;
+    private JLabel stagingLabel;
+    private JProgressBar progressBar;
 
     private JTextField usernameField;
 
@@ -69,176 +76,181 @@ public class SlaveFrame extends JFrame {
 
         setLocationRelativeTo(null);
 
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setMinimumSize(new Dimension(800, 600));
 
-        setContentPane(createContent());
+        cardPanel = new JPanel(new CardLayout());
+        cardLayout = (CardLayout) cardPanel.getLayout();
+        
+        cardPanel.add(createLoginPanel(), "LOGIN");
+        cardPanel.add(createMainPanel(), "MAIN");
 
+        add(cardPanel);
+
+        // Frame-level DropTarget for robust drag-and-drop
+        this.setDropTarget(new java.awt.dnd.DropTarget() {
+            public synchronized void drop(java.awt.dnd.DropTargetDropEvent evt) {
+                try {
+                    evt.acceptDrop(java.awt.dnd.DnDConstants.ACTION_COPY);
+                    java.util.List<File> droppedFiles = (java.util.List<File>) evt.getTransferable().getTransferData(java.awt.datatransfer.DataFlavor.javaFileListFlavor);
+                    if (droppedFiles != null && !droppedFiles.isEmpty()) {
+                        selectedFile = droppedFiles.get(0);
+                        if (stagingLabel != null) {
+                            stagingLabel.setText("Staged: " + selectedFile.getName());
+                            selectedFileLabel.setText(" | " + selectedFile.getName());
+                            uploadButton.setEnabled(true);
+                        }
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+        });
+
+        registerEvent();
         setVisible(true);
-
-
-
     }
 
-    private JPanel createContent() {
+    private JPanel createLoginPanel() {
+        JPanel panel = new JPanel(new GridBagLayout());
+        panel.setBackground(UIConstants.BACKGROUND);
 
+        JPanel innerPanel = new JPanel();
+        innerPanel.setLayout(new BoxLayout(innerPanel, BoxLayout.Y_AXIS));
+        innerPanel.setBackground(UIConstants.CARD_BACKGROUND);
+        innerPanel.putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, 
+            "arc: 20; border: 30,40,30,40");
+
+        JPanel titlePanel = new JPanel(new BorderLayout());
+        titlePanel.setOpaque(false);
+        JLabel title = new JLabel("Slave Login");
+        title.setFont(new Font("SansSerif", Font.BOLD, 28));
+        title.setAlignmentX(Component.CENTER_ALIGNMENT);
+        
+        titlePanel.add(title, BorderLayout.CENTER);
+
+        JLabel usernameLabel = new JLabel("Username");
+        usernameLabel.setFont(UIConstants.NORMAL_FONT);
+        usernameLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        usernameField = new JTextField("username");
+        usernameField.setPreferredSize(new Dimension(300, 38));
+        usernameField.setMaximumSize(new Dimension(300, 38));
+        usernameField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Masukkan username");
+
+        JLabel hostLabel = new JLabel("Master Server IP");
+        hostLabel.setFont(UIConstants.NORMAL_FONT);
+        hostLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+
+        hostField = new JTextField("localhost");
+        hostField.setPreferredSize(new Dimension(300, 38));
+        hostField.setMaximumSize(new Dimension(300, 38));
+        hostField.putClientProperty(FlatClientProperties.PLACEHOLDER_TEXT, "Contoh: 192.168.1.5");
+
+        connectButton = new JButton("Connect");
+        connectButton.setPreferredSize(new Dimension(150, 38));
+        connectButton.setMaximumSize(new Dimension(150, 38));
+        connectButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        connectButton.setBackground(UIConstants.PRIMARY);
+        connectButton.setForeground(Color.WHITE);
+
+        usernameField.addActionListener(e -> connectButton.doClick());
+        hostField.addActionListener(e -> connectButton.doClick());
+
+        innerPanel.add(titlePanel);
+        innerPanel.add(Box.createVerticalStrut(30));
+        innerPanel.add(usernameLabel);
+        innerPanel.add(Box.createVerticalStrut(5));
+        innerPanel.add(usernameField);
+        innerPanel.add(Box.createVerticalStrut(15));
+        innerPanel.add(hostLabel);
+        innerPanel.add(Box.createVerticalStrut(5));
+        innerPanel.add(hostField);
+        innerPanel.add(Box.createVerticalStrut(20));
+        innerPanel.add(connectButton);
+
+        panel.add(innerPanel);
+        return panel;
+    }
+
+    private JPanel createMainPanel() {
         JPanel root = new JPanel(new BorderLayout(15,15));
-
         root.setBorder(new EmptyBorder(20,20,20,20));
-
         root.setBackground(UIConstants.BACKGROUND);
 
         JPanel topPanel = new JPanel(new BorderLayout(15,15));
-
         topPanel.setOpaque(false);
 
-        topPanel.add(createHeader(), BorderLayout.NORTH);
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setOpaque(false);
 
-        topPanel.add(createHostPanel(), BorderLayout.CENTER);
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1));
+        titlePanel.setOpaque(false);
 
+        JLabel title = new JLabel("Slave Dashboard");
+        title.setFont(new Font("SansSerif", Font.BOLD, 24));
+        
+        masterIpLabel = new JLabel("Connected to: Unknown");
+        masterIpLabel.setFont(UIConstants.NORMAL_FONT);
+        masterIpLabel.setForeground(Color.GRAY);
+
+        titlePanel.add(title);
+        titlePanel.add(masterIpLabel);
+        headerPanel.add(titlePanel, BorderLayout.WEST);
+
+        topPanel.add(headerPanel, BorderLayout.NORTH);
         topPanel.add(createToolbar(), BorderLayout.SOUTH);
 
         root.add(topPanel, BorderLayout.NORTH);
-
         root.add(createCenterPanel(), BorderLayout.CENTER);
-
         root.add(createFooter(), BorderLayout.SOUTH);
 
-        registerEvent();
-
         return root;
-
-    }
-
-    private JPanel createHeader() {
-
-        JPanel panel = new JPanel(new BorderLayout());
-
-        panel.setOpaque(false);
-
-        JLabel title = new JLabel("🖥 Slave Client");
-
-        title.setFont(
-                new Font("SansSerif", Font.BOLD, 24)
-        );
-
-        panel.add(title, BorderLayout.WEST);
-
-        return panel;
-
-    }
-
-    private JPanel createHostPanel() {
-
-        JPanel panel = new JPanel();
-        panel.setOpaque(false);
-        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-
-        // Username
-        JLabel usernameLabel = new JLabel("Username");
-        usernameLabel.setFont(UIConstants.NORMAL_FONT);
-        usernameLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        usernameField = new JTextField("username");
-        usernameField.setPreferredSize(new Dimension(250, 38));
-        usernameField.setMaximumSize(new Dimension(250, 38));
-
-        usernameField.putClientProperty(
-                FlatClientProperties.PLACEHOLDER_TEXT,
-                "Masukkan username"
-        );
-
-        usernameField.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        // Host Address
-        JLabel hostLabel = new JLabel("Host Address");
-        hostLabel.setFont(UIConstants.NORMAL_FONT);
-        hostLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        JPanel hostRow = new JPanel(new FlowLayout(
-                FlowLayout.LEFT,
-                10,
-                0
-        ));
-
-        hostRow.setOpaque(false);
-        hostRow.setAlignmentX(Component.LEFT_ALIGNMENT);
-
-        hostField = new JTextField("localhost");
-        hostField.setPreferredSize(new Dimension(330, 38));
-
-        hostField.putClientProperty(
-                FlatClientProperties.PLACEHOLDER_TEXT,
-                "Host"
-        );
-
-        connectButton = new JButton("Connect");
-        connectButton.setPreferredSize(new Dimension(130, 38));
-
-        hostRow.add(hostField);
-        hostRow.add(connectButton);
-
-        // Layout
-        panel.add(usernameLabel);
-        panel.add(Box.createVerticalStrut(5));
-
-        panel.add(usernameField);
-        panel.add(Box.createVerticalStrut(15));
-
-        panel.add(hostLabel);
-        panel.add(Box.createVerticalStrut(5));
-
-        panel.add(hostRow);
-
-        return panel;
     }
 
     private JPanel createToolbar() {
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        mainPanel.setOpaque(false);
 
-        JPanel panel = new JPanel(
-                new FlowLayout(
-                        FlowLayout.LEFT,
-                        10,
-                        0
-                )
-        );
-
-        panel.setOpaque(false);
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 0));
+        buttonPanel.setOpaque(false);
 
         browseButton = new JButton("Browse");
-
         uploadButton = new JButton("Upload");
-
         refreshButton = new JButton("Refresh");
 
-        Dimension buttonSize =
-                new Dimension(130,38);
-
+        Dimension buttonSize = new Dimension(130,38);
         browseButton.setPreferredSize(buttonSize);
-
         uploadButton.setPreferredSize(buttonSize);
-
         refreshButton.setPreferredSize(buttonSize);
 
         browseButton.setFont(UIConstants.NORMAL_FONT);
-
         uploadButton.setFont(UIConstants.NORMAL_FONT);
-
         refreshButton.setFont(UIConstants.NORMAL_FONT);
 
         browseButton.setEnabled(false);
-
         uploadButton.setEnabled(false);
-
         refreshButton.setEnabled(false);
 
-        panel.add(browseButton);
+        browseButton.putClientProperty("JButton.buttonType", "roundRect");
+        uploadButton.putClientProperty("JButton.buttonType", "roundRect");
+        uploadButton.setBackground(UIConstants.PRIMARY);
+        uploadButton.setForeground(Color.WHITE);
 
-        panel.add(uploadButton);
+        buttonPanel.add(browseButton);
+        buttonPanel.add(uploadButton);
+        buttonPanel.add(Box.createHorizontalStrut(20));
+        buttonPanel.add(refreshButton);
 
-        panel.add(refreshButton);
+        stagingLabel = new JLabel("Staged: None");
+        stagingLabel.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        stagingLabel.setForeground(Color.GRAY);
+        stagingLabel.setBorder(new EmptyBorder(5, 5, 0, 0));
 
-        return panel;
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
+        mainPanel.add(stagingLabel, BorderLayout.SOUTH);
 
+        return mainPanel;
     }
 
     private JPanel createCenterPanel() {
@@ -266,38 +278,19 @@ public class SlaveFrame extends JFrame {
         searchField = new JTextField();
 
         searchField.putClientProperty(
-                FlatClientProperties.PLACEHOLDER_TEXT,
-                "🔍 Cari file di server..."
+                com.formdev.flatlaf.FlatClientProperties.PLACEHOLDER_TEXT,
+                "Cari file di server..."
         );
 
-        selectedFileLabel =
-                new JLabel("📄 Belum ada file dipilih");
-
-        selectedFileLabel.setFont(
-                UIConstants.NORMAL_FONT
-        );
-
-        searchField.setPreferredSize(
-                new Dimension(400, 38)
-        );
-
+        searchField.setPreferredSize(new Dimension(400, 38));
         searchLabel.setFont(UIConstants.NORMAL_FONT);
-
         searchLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         searchField.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        selectedFileLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
-
         topPanel.add(searchLabel);
-
         topPanel.add(Box.createVerticalStrut(5));
-
         topPanel.add(searchField);
-
         topPanel.add(Box.createVerticalStrut(10));
-
-        topPanel.add(selectedFileLabel);
 
         tableModel = new DefaultTableModel(
                 new Object[]{
@@ -322,11 +315,10 @@ public class SlaveFrame extends JFrame {
         };
 
         fileTable = new JTable(tableModel);
-
         fileTable.setRowHeight(28);
+        fileTable.setFillsViewportHeight(true);
 
-        tableScrollPane =
-                new JScrollPane(fileTable);
+        tableScrollPane = new JScrollPane(fileTable);
 
         panel.add(
                 topPanel,
@@ -343,42 +335,48 @@ public class SlaveFrame extends JFrame {
     }
 
     private JPanel createFooter() {
-
-        JPanel panel = new JPanel(
-                new BorderLayout()
-        );
-
+        JPanel panel = new JPanel(new BorderLayout());
         panel.setOpaque(false);
 
-        statusLabel = new JLabel("🔴 Belum terhubung");
+        JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 0));
+        leftPanel.setOpaque(false);
 
-        statusLabel.setFont(UIConstants.NORMAL_FONT);
+        statusLabel = new JLabel("Disconnected");
+        statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        statusLabel.setForeground(UIConstants.ERROR);
 
-        downloadButton =
-                new JButton("Download");
+        selectedFileLabel = new JLabel(" | No file selected");
+        selectedFileLabel.setFont(UIConstants.NORMAL_FONT);
 
-        downloadButton.setPreferredSize(
-                new Dimension(140,38)
-        );
+        leftPanel.add(statusLabel);
+        leftPanel.add(selectedFileLabel);
 
-        downloadButton.setFont(
-                UIConstants.NORMAL_FONT
-        );
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
+        rightPanel.setOpaque(false);
 
+        progressBar = new JProgressBar(0, 100);
+        progressBar.setPreferredSize(new Dimension(150, 20));
+        progressBar.setStringPainted(true);
+        progressBar.setVisible(false);
+
+        downloadButton = new JButton("Download");
+        downloadButton.setPreferredSize(new Dimension(140,38));
+        downloadButton.setFont(UIConstants.NORMAL_FONT);
         downloadButton.setEnabled(false);
 
-        panel.add(
-                statusLabel,
-                BorderLayout.WEST
-        );
+        disconnectButton = new JButton("Disconnect");
+        disconnectButton.setPreferredSize(new Dimension(140,38));
+        disconnectButton.setFont(UIConstants.NORMAL_FONT);
+        disconnectButton.setForeground(Color.RED);
 
-        panel.add(
-                downloadButton,
-                BorderLayout.EAST
-        );
+        rightPanel.add(progressBar);
+        rightPanel.add(downloadButton);
+        rightPanel.add(disconnectButton);
+
+        panel.add(leftPanel, BorderLayout.WEST);
+        panel.add(rightPanel, BorderLayout.EAST);
 
         return panel;
-
     }
 
     private void registerEvent(){
@@ -392,22 +390,19 @@ public class SlaveFrame extends JFrame {
 
                 slaveClient.connect(hostField.getText().trim());
 
-//                startAutoRefresh();
-
-                statusLabel.setText("🟢 Connected");
+                statusLabel.setText("Connected");
+                statusLabel.setForeground(UIConstants.SUCCESS);
+                masterIpLabel.setText("Connected to: " + hostField.getText().trim());
 
                 connectButton.setEnabled(false);
-
                 browseButton.setEnabled(true);
-
                 uploadButton.setEnabled(false);
-
                 refreshButton.setEnabled(true);
 
+                cardLayout.show(cardPanel, "MAIN");
+
                 refreshFiles();
-
                 fileTable.clearSelection();
-
                 downloadButton.setEnabled(false);
 
             }catch(IOException exception){
@@ -422,69 +417,60 @@ public class SlaveFrame extends JFrame {
         });
 
         browseButton.addActionListener(event -> {
-
             JFileChooser chooser = new JFileChooser();
-
             int result = chooser.showOpenDialog(this);
-
             if (result == JFileChooser.APPROVE_OPTION) {
-
                 selectedFile = chooser.getSelectedFile();
-
-                selectedFileLabel.setText(
-                         selectedFile.getName()
-                );
-
+                stagingLabel.setText("Staged: " + selectedFile.getName());
+                selectedFileLabel.setText(" | " + selectedFile.getName());
                 uploadButton.setEnabled(true);
-
             }
-
         });
 
         uploadButton.addActionListener(event -> {
-
             if (selectedFile == null) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Silakan pilih file terlebih dahulu."
-                );
-
+                JOptionPane.showMessageDialog(this, "Silakan pilih file terlebih dahulu.");
                 return;
-
             }
 
-            try {
+            uploadButton.setEnabled(false);
+            browseButton.setEnabled(false);
+            progressBar.setVisible(true);
+            progressBar.setValue(0);
 
-                slaveClient.upload(selectedFile);
+            SwingWorker<Void, Integer> worker = new SwingWorker<Void, Integer>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    slaveClient.upload(selectedFile, this::publish);
+                    return null;
+                }
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Upload berhasil."
-                );
+                @Override
+                protected void process(java.util.List<Integer> chunks) {
+                    if (!chunks.isEmpty()) {
+                        progressBar.setValue(chunks.get(chunks.size() - 1));
+                    }
+                }
 
-                // Reset pilihan file
-                selectedFile = null;
-
-                selectedFileLabel.setText("Belum ada file dipilih");
-
-                uploadButton.setEnabled(false);
-
-                // Refresh daftar file di Master
-                refreshFiles();
-
-
-            } catch (IOException exception) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Upload gagal."
-                );
-
-                exception.printStackTrace();
-
-            }
-
+                @Override
+                protected void done() {
+                    progressBar.setVisible(false);
+                    browseButton.setEnabled(true);
+                    try {
+                        get();
+                        JOptionPane.showMessageDialog(SlaveFrame.this, "Upload berhasil.");
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(SlaveFrame.this, "Upload gagal.");
+                        ex.printStackTrace();
+                    } finally {
+                        selectedFile = null;
+                        stagingLabel.setText("Staged: None");
+                        selectedFileLabel.setText(" | No file selected");
+                        refreshFiles();
+                    }
+                }
+            };
+            worker.execute();
         });
 
         refreshButton.addActionListener(event -> {
@@ -502,110 +488,81 @@ public class SlaveFrame extends JFrame {
         });
 
         downloadButton.addActionListener(event -> {
-
             int selectedRow = fileTable.getSelectedRow();
-
             if (selectedRow == -1) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Pilih file terlebih dahulu."
-                );
-
+                JOptionPane.showMessageDialog(this, "Pilih file terlebih dahulu.");
                 return;
-
             }
 
-            downloadButton.setEnabled(true);
+            downloadButton.setEnabled(false);
+            progressBar.setVisible(true);
+            progressBar.setValue(0);
 
-            String fileName = tableModel
-                    .getValueAt(selectedRow, 0)
-                    .toString();
+            String fileName = tableModel.getValueAt(selectedRow, 0).toString();
 
-            try {
+            SwingWorker<Void, Integer> worker = new SwingWorker<Void, Integer>() {
+                @Override
+                protected Void doInBackground() throws Exception {
+                    slaveClient.download(fileName, this::publish);
+                    return null;
+                }
 
-                slaveClient.download(fileName);
+                @Override
+                protected void process(java.util.List<Integer> chunks) {
+                    if (!chunks.isEmpty()) {
+                        progressBar.setValue(chunks.get(chunks.size() - 1));
+                    }
+                }
 
-                JOptionPane.showMessageDialog(
-                        this,
-                        "File berhasil didownload."
-                );
-
-            } catch (IOException exception) {
-
-                JOptionPane.showMessageDialog(
-                        this,
-                        "Download gagal."
-                );
-
-                exception.printStackTrace();
-
-            }
-
+                @Override
+                protected void done() {
+                    progressBar.setVisible(false);
+                    downloadButton.setEnabled(true);
+                    try {
+                        get();
+                        JOptionPane.showMessageDialog(SlaveFrame.this, "File berhasil didownload.");
+                    } catch (Exception ex) {
+                        JOptionPane.showMessageDialog(SlaveFrame.this, "Download gagal.");
+                        ex.printStackTrace();
+                    }
+                }
+            };
+            worker.execute();
         });
 
-        searchField.getDocument().addDocumentListener(
-                new DocumentListener() {
+        searchField.addActionListener(event -> {
+            refreshFiles();
+        });
 
-                    @Override
-                    public void insertUpdate(DocumentEvent event) {
-
-                        filterTable();
-
-                    }
-
-                    @Override
-                    public void removeUpdate(DocumentEvent event) {
-
-                        filterTable();
-
-                    }
-
-                    @Override
-                    public void changedUpdate(DocumentEvent event) {
-
-                        filterTable();
-
-                    }
-
-                }
-        );
-
-    }
-
-    private void filterTable() {
-
-        String keyword =
-                searchField.getText().toLowerCase();
-
-        tableModel.setRowCount(0);
-
-        for (FileInfo file : allFiles) {
-
-            if (file.getFileName()
-                    .toLowerCase()
-                    .contains(keyword)) {
-
-                tableModel.addRow(
-                        new Object[]{
-                                file.getFileName(),
-                                file.getUploadedBy(),
-                                file.getFileSize(),
-                                file.getUploadTime()
-                        }
-                );
-
+        disconnectButton.addActionListener(event -> {
+            try {
+                slaveClient.disconnect();
+            } catch (IOException e) {
+                // ignore
             }
-
-        }
+            statusLabel.setText("Disconnected");
+            statusLabel.setForeground(UIConstants.ERROR);
+            cardLayout.show(cardPanel, "LOGIN");
+            tableModel.setRowCount(0);
+            stagingLabel.setText("Staged: None");
+            selectedFileLabel.setText(" | No file selected");
+            uploadButton.setEnabled(false);
+            browseButton.setEnabled(false);
+            refreshButton.setEnabled(false);
+            connectButton.setEnabled(true);
+        });
 
     }
+
+
 
     private void refreshFiles() {
 
         try {
 
-            allFiles = slaveClient.search();
+            String keyword = searchField.getText().trim();
+
+            allFiles = slaveClient.search(keyword);
 
             tableModel.setRowCount(0);
 
@@ -655,13 +612,8 @@ public class SlaveFrame extends JFrame {
     }
 
     private void stopAutoRefresh() {
-
         if (autoRefreshTimer != null) {
-
             autoRefreshTimer.stop();
-
         }
-
     }
-
 }

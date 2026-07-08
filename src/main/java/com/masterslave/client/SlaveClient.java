@@ -90,26 +90,26 @@ public class SlaveClient {
 
     }
 
-    public void upload(File file) throws IOException {
+    public void upload(File file, java.util.function.Consumer<Integer> progressCallback) throws IOException {
 
         output.writeUTF(Protocol.UPLOAD);
-
         output.writeUTF(file.getName());
-
         output.writeLong(file.length());
 
         try (FileInputStream fis = new FileInputStream(file)) {
-
             byte[] buffer = new byte[4096];
-
             int bytesRead;
+            long totalRead = 0;
+            long fileSize = file.length();
 
             while ((bytesRead = fis.read(buffer)) != -1) {
-
                 output.write(buffer, 0, bytesRead);
-
+                totalRead += bytesRead;
+                if (progressCallback != null && fileSize > 0) {
+                    int percent = (int) ((totalRead * 100) / fileSize);
+                    progressCallback.accept(percent);
+                }
             }
-
         }
 
         output.flush();
@@ -131,9 +131,10 @@ public class SlaveClient {
     /**
      * Meminta daftar file dari Master.
      */
-    public List<FileInfo> search() throws IOException {
+    public List<FileInfo> search(String keyword) throws IOException {
 
         output.writeUTF(Protocol.SEARCH);
+        output.writeUTF(keyword);
 
         int total = input.readInt();
 
@@ -167,66 +168,48 @@ public class SlaveClient {
     /**
      * Mengunduh file dari Master.
      */
-    public void download(String fileName) throws IOException {
+    public void download(String fileName, java.util.function.Consumer<Integer> progressCallback) throws IOException {
 
         output.writeUTF(Protocol.DOWNLOAD);
-
         output.writeUTF(fileName);
-
         output.flush();
 
         String response = input.readUTF();
 
         if (!Protocol.SUCCESS.equals(response)) {
-
             System.out.println("File tidak ditemukan.");
-
             return;
-
         }
 
         long fileSize = input.readLong();
-
         File directory = new File(DOWNLOAD_DIRECTORY);
 
         if (!directory.exists()) {
-
             directory.mkdirs();
-
         }
 
         System.out.println("DOWNLOAD DIRECTORY : " + DOWNLOAD_DIRECTORY);
-
         File destination = new File(directory, fileName);
-
         System.out.println("DESTINATION : " + destination.getAbsolutePath());
 
         try (FileOutputStream fos = new FileOutputStream(destination)) {
-
             byte[] buffer = new byte[4096];
-
             long remaining = fileSize;
+            long totalRead = 0;
 
             while (remaining > 0) {
-
-                int read = input.read(
-                        buffer,
-                        0,
-                        (int) Math.min(buffer.length, remaining)
-                );
-
-                if (read == -1) {
-
-                    break;
-
-                }
+                int read = input.read(buffer, 0, (int) Math.min(buffer.length, remaining));
+                if (read == -1) break;
 
                 fos.write(buffer, 0, read);
-
                 remaining -= read;
-
+                totalRead += read;
+                
+                if (progressCallback != null && fileSize > 0) {
+                    int percent = (int) ((totalRead * 100) / fileSize);
+                    progressCallback.accept(percent);
+                }
             }
-
         }
 
         System.out.println("Download selesai : " + destination.getAbsolutePath());

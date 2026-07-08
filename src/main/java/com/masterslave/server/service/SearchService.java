@@ -25,14 +25,25 @@ public class SearchService {
      * Mengirim seluruh nama file ke Slave.
      */
     public void sendFileList(
-            DataOutputStream output
+            DataOutputStream output,
+            String keyword
     ) throws IOException {
 
+        java.util.List<FileInfo> allFiles = fileStorage.getFileInfos();
+        java.util.List<FileInfo> filteredFiles = new java.util.ArrayList<>();
+        String lowerKeyword = keyword != null ? keyword.toLowerCase() : "";
+
+        for (FileInfo fileInfo : allFiles) {
+            if (fileInfo.getFileName().toLowerCase().contains(lowerKeyword)) {
+                filteredFiles.add(fileInfo);
+            }
+        }
+
         output.writeInt(
-                fileStorage.getFileInfos().size()
+                filteredFiles.size()
         );
 
-        for (FileInfo fileInfo : fileStorage.getFileInfos()) {
+        for (FileInfo fileInfo : filteredFiles) {
 
             output.writeUTF(
                     fileInfo.getFileName()

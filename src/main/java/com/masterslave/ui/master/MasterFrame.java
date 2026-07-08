@@ -101,22 +101,36 @@ public class MasterFrame extends JFrame implements ServerListener {
     private JPanel createHeader() {
 
         JPanel panel = new JPanel(new BorderLayout());
-
         panel.setOpaque(false);
 
+        JPanel titlePanel = new JPanel(new GridLayout(2, 1));
+        titlePanel.setOpaque(false);
+
         JLabel titleLabel = new JLabel("Master Server");
-
         titleLabel.setFont(UIConstants.TITLE_FONT);
+        
+        JLabel ipLabel = new JLabel("IP Address: Unknown");
+        try {
+            ipLabel.setText("IP Address: " + java.net.InetAddress.getLocalHost().getHostAddress());
+        } catch (Exception e) {
+            // ignore
+        }
+        ipLabel.setFont(UIConstants.NORMAL_FONT);
+        ipLabel.setForeground(Color.GRAY);
+        
+        titlePanel.add(titleLabel);
+        titlePanel.add(ipLabel);
 
-        statusLabel = new JLabel("● Offline");
+        statusLabel = new JLabel("Offline");
+        statusLabel.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        statusLabel.setForeground(UIConstants.ERROR);
 
-        statusLabel.setFont(UIConstants.NORMAL_FONT);
+        JPanel rightPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        rightPanel.setOpaque(false);
+        rightPanel.add(statusLabel);
 
-        statusLabel.setForeground(Color.RED);
-
-        panel.add(titleLabel, BorderLayout.WEST);
-
-        panel.add(statusLabel, BorderLayout.EAST);
+        panel.add(titlePanel, BorderLayout.WEST);
+        panel.add(rightPanel, BorderLayout.EAST);
 
         return panel;
     }
@@ -165,10 +179,8 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.setOpaque(false);
 
         clientCard = new DashboardCard("Connected Client", "0");
-
         fileCard = new DashboardCard("Total Files", "0");
-
-        statusCard = new DashboardCard("Server Status", "Offline");
+        statusCard = new DashboardCard("Server Status", "<html><font color='#E81123'>Offline</font></html>");
 
         panel.add(clientCard);
 
@@ -246,10 +258,10 @@ public class MasterFrame extends JFrame implements ServerListener {
         panel.add(title, BorderLayout.NORTH);
 
         logArea = new JTextArea(8, 0);
-
         logArea.setEditable(false);
-
-        logArea.setFont(UIConstants.LOG_FONT);
+        logArea.setFont(new Font("Consolas", Font.PLAIN, 14));
+        logArea.setBackground(UIConstants.TERMINAL_BG);
+        logArea.setForeground(UIConstants.TERMINAL_FG);
 
         // Membuat teks otomatis pindah ke baris berikutnya
         logArea.setLineWrap(true);
@@ -383,10 +395,10 @@ public class MasterFrame extends JFrame implements ServerListener {
 
             System.out.println("onServerStarted dipanggil");
 
-            statusLabel.setText("🟢 Running");
+            statusLabel.setText("Running");
             statusLabel.setForeground(UIConstants.SUCCESS);
 
-            statusCard.setValue("Running");
+            statusCard.setValue("<html><font color='#10893E'>Running</font></html>");
 
             controlPanel.setServerRunning(true);
 
@@ -404,10 +416,10 @@ public class MasterFrame extends JFrame implements ServerListener {
 
         SwingUtilities.invokeLater(() -> {
 
-            statusLabel.setText("🔴 Offline");
+            statusLabel.setText("Offline");
             statusLabel.setForeground(Color.RED);
 
-            statusCard.setValue("Offline");
+            statusCard.setValue("<html><font color='#E81123'>Offline</font></html>");
 
             updateClientCount(0);
 
@@ -473,9 +485,7 @@ public class MasterFrame extends JFrame implements ServerListener {
             updateClientCount(totalClients);
 
             addLog("🔴 " + username + " disconnected.");
-
         });
-
     }
 
 }

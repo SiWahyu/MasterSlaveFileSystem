@@ -30,6 +30,14 @@ public class ControlPanel extends JPanel {
         startButton.setFont(UIConstants.NORMAL_FONT);
         stopButton.setFont(UIConstants.NORMAL_FONT);
 
+        startButton.setBackground(UIConstants.SUCCESS);
+        startButton.setForeground(Color.WHITE);
+        startButton.putClientProperty("JButton.buttonType", "roundRect");
+
+        stopButton.setBackground(UIConstants.ERROR);
+        stopButton.setForeground(Color.WHITE);
+        stopButton.putClientProperty("JButton.buttonType", "roundRect");
+
         add(startButton);
         add(stopButton);
 
