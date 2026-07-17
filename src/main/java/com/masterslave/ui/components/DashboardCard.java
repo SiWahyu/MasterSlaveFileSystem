@@ -15,8 +15,8 @@ public class DashboardCard extends JPanel {
     public DashboardCard(String title, String value) {
 
         setLayout(new BorderLayout(0, 10));
-
         setBackground(UIConstants.CARD_BACKGROUND);
+        putClientProperty(com.formdev.flatlaf.FlatClientProperties.STYLE, "arc: 15");
 
         setBorder(new CompoundBorder(
                 new LineBorder(UIConstants.BORDER),

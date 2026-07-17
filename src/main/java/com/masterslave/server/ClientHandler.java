@@ -15,23 +15,14 @@ import com.masterslave.server.service.DownloadService;
  * Menangani komunikasi antara server dan satu client.
  */
 public class ClientHandler implements Runnable {
-
     private final Socket clientSocket;
-
     private final String clientName;
-
     private final FileTransferService fileTransferService;
-
     private final SearchService searchService;
-
     private final DownloadService downloadService;
-
     private DataInputStream input;
-
     private DataOutputStream output;
-
     private String username = "Unknown";
-
     private final MasterServer masterServer;
 
     public ClientHandler(
@@ -41,7 +32,6 @@ public class ClientHandler implements Runnable {
             SearchService searchService,
             DownloadService downloadService
     ) {
-
         this.clientSocket = clientSocket;
 
         this.fileTransferService = fileTransferService;
@@ -54,14 +44,11 @@ public class ClientHandler implements Runnable {
 
         this.clientName =
                 clientSocket.getInetAddress().getHostAddress();
-
-    }
+}
 
     @Override
     public void run() {
-
         try {
-
             input = new DataInputStream(
                     clientSocket.getInputStream()
             );
@@ -71,13 +58,10 @@ public class ClientHandler implements Runnable {
             );
 
             while (!clientSocket.isClosed()) {
-
                 String command = input.readUTF();
 
                 switch (command) {
-
                     case Protocol.LOGIN -> {
-
                         username = input.readUTF();
 
                         System.out.println(
@@ -85,8 +69,7 @@ public class ClientHandler implements Runnable {
                         );
 
                         masterServer.clientLoggedIn(this);
-
-                    }
+}
 
                     case Protocol.UPLOAD ->
 
@@ -96,11 +79,14 @@ public class ClientHandler implements Runnable {
                                     output
                             );
 
-                    case Protocol.SEARCH ->
+                    case Protocol.SEARCH -> {
+                            String keyword = input.readUTF();
 
                             searchService.sendFileList(
-                                    output
+                                    output,
+                                    keyword
                             );
+}
 
                     case Protocol.DOWNLOAD ->
 
@@ -114,28 +100,20 @@ public class ClientHandler implements Runnable {
                             output.writeUTF(
                                     Protocol.FAILED
                             );
-
-                }
-
-            }
-
-        } catch (IOException exception) {
-
+}
+}
+} catch (IOException exception) {
             System.out.println(
                     "Client terputus : "
                             + clientName
             );
-
-        }
+}
         finally {
-
             close();
 
             masterServer.removeClient(this);
-
-        }
-
-    }
+}
+}
 
     /**
      * Mengembalikan nama client.
@@ -148,27 +126,17 @@ public class ClientHandler implements Runnable {
      * Menutup koneksi client.
      */
     public void close() {
-
         try {
-
             if (clientSocket != null && !clientSocket.isClosed()) {
-
                 clientSocket.close();
-
-            }
-
-        } catch (IOException exception) {
-
+}
+} catch (IOException exception) {
             exception.printStackTrace();
-
-        }
-
-    }
+}
+}
 
     public String getUsername() {
-
         return username;
-
-    }
-
 }
+}
+

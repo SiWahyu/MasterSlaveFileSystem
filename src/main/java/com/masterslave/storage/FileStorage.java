@@ -4,7 +4,7 @@ import com.masterslave.common.model.FileInfo;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.List;
 
 /**
@@ -18,7 +18,7 @@ public class FileStorage {
     public static final String STORAGE_DIRECTORY = "storage/uploads";
 
     private final List<FileInfo> fileInfos =
-            new ArrayList<>();
+            new CopyOnWriteArrayList<>();
 
     /**
      * Membuat folder penyimpanan apabila belum tersedia.
